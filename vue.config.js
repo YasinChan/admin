@@ -1,3 +1,3 @@
 module.exports = {
-  assetsDir: "admin"
+  baseUrl: process.env.NODE_ENV === "production" ? "/admin/" : "/"
 };
