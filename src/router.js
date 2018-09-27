@@ -1,24 +1,61 @@
 import Vue from "vue";
 import Router from "vue-router";
-import Home from "./views/Home.vue";
+
+const Index = () => import("./views/index");
+const Photos = () => import("./views/photos");
+const Notes = () => import("./views/notes");
+const About = () => import("./views/about");
+const Setting = () => import("./views/setting");
+
+const Blog = () => import("./views/index/blog");
+const BlogList = () => import("./views/index/bloglist");
 
 Vue.use(Router);
 
 export default new Router({
+  mode: "history",
   routes: [
     {
       path: "/",
-      name: "home",
-      component: Home
+      name: "index",
+      component: Index,
+      children: [
+        {
+          path: "/",
+          name: "",
+          component: BlogList
+        },
+        {
+          path: "newblog",
+          name: "newblog",
+          component: Blog
+        },
+        {
+          path: "editblog/:id",
+          name: "editblog",
+          component: Blog
+        }
+      ]
+    },
+    {
+      path: "/photos",
+      name: "photos",
+      component: Photos
+    },
+    {
+      path: "/notes",
+      name: "notes",
+      component: Notes
     },
     {
       path: "/about",
       name: "about",
-      // route level code-splitting
-      // this generates a separate chunk (about.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () =>
-        import(/* webpackChunkName: "about" */ "./views/About.vue")
+      component: About
+    },
+    {
+      path: "/setting",
+      name: "setting",
+      component: Setting
     }
   ]
 });
