@@ -49,6 +49,7 @@
 </template>
 
 <script>
+import axios from "axios";
 export default {
   data() {
     return {
@@ -79,6 +80,13 @@ export default {
         }
       ]
     };
+  },
+  mounted() {
+    debugger;
+    axios.get("http://127.0.0.1:7001/api/post").then(res => {
+      debugger;
+      console.log(res);
+    });
   },
   methods: {
     routerPush(type, row) {
