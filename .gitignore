@@ -21,3 +21,6 @@ yarn-error.log*
 *.sw*
 
 yarn.lock
+
+src/router/router.js
+src/views/login.vue

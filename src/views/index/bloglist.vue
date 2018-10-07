@@ -6,31 +6,39 @@
         style="width: 100%">
       <el-table-column
           label="ID"
-          width="80">
+          width="120">
         <template slot-scope="scope">
           <span>{{ scope.row.id }}</span>
         </template>
       </el-table-column>
       <el-table-column
-          label="日期"
-          width="180">
+          label="标题"
+          width="120">
         <template slot-scope="scope">
-          <i class="el-icon-time"></i>
-          <span style="margin-left: 10px">{{ scope.row.date }}</span>
+          <span size="medium">{{ scope.row.title }}</span>
         </template>
       </el-table-column>
       <el-table-column
-          label="标题"
-          width="180">
+          label="编写日期"
+          width="200">
         <template slot-scope="scope">
-          <span size="medium">{{ scope.row.title }}</span>
+          <i class="el-icon-time"></i>
+          <span style="margin-left: 10px">{{ scope.row.created_at }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+          label="修改日期"
+          width="200">
+        <template slot-scope="scope">
+          <i class="el-icon-time"></i>
+          <span style="margin-left: 10px">{{ scope.row.updated_at }}</span>
         </template>
       </el-table-column>
       <el-table-column
           label="标签"
           width="380">
         <template slot-scope="scope">
-          <el-tag v-for="item in scope.row.tag" size="medium" :key="item">{{ item }}</el-tag>
+          <el-tag v-for="item in scope.row.tags" size="medium" :key="item.id">{{ item.name }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="操作">
@@ -49,48 +57,31 @@
 </template>
 
 <script>
-import axios from "axios";
+import { getPosts, deletePostById } from "@/common/js/api";
+import tinydate from "tinydate";
+
+const stamp = tinydate("{YYYY}-{MM}-{DD} {HH}:{mm}:{ss}");
+
 export default {
   data() {
     return {
-      tableData: [
-        {
-          id: "1",
-          date: "2016-05-02",
-          title: "标题一",
-          tag: ["标签一", "标签二", "标签三"]
-        },
-        {
-          id: "2",
-          date: "2016-05-04",
-          title: "标题一",
-          tag: ["标签一", "标签二", "标签三"]
-        },
-        {
-          id: "3",
-          date: "2016-05-01",
-          title: "标题一",
-          tag: ["标签一", "标签二", "标签三"]
-        },
-        {
-          id: "4",
-          date: "2016-05-03",
-          title: "标题一",
-          tag: ["标签一", "标签二", "标签三"]
-        }
-      ]
+      tableData: []
     };
   },
   mounted() {
-    debugger;
-    axios.get("http://127.0.0.1:7001/api/post").then(res => {
-      debugger;
-      console.log(res);
+    getPosts().then(res => {
+      let result = res.data.result;
+
+      result.forEach(v => {
+        v.created_at = stamp(new Date(v.created_at));
+        v.updated_at = stamp(new Date(v.updated_at));
+      });
+
+      this.tableData = result;
     });
   },
   methods: {
     routerPush(type, row) {
-      debugger;
       if (type === "new") {
         this.$router.push({ path: "/newblog" });
       } else {
@@ -99,6 +90,9 @@ export default {
     },
     handleDelete(index, row) {
       console.log(index, row);
+      deletePostById(row.id).then(res => {
+        console.log(res);
+      });
     }
   }
 };

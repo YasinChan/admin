@@ -1,21 +1,10 @@
-# admin
+# 后台管理
 
-## Project setup
-```
-yarn install
-```
+> 博客地址：[https://yasinchan.com](https://yasinchan.com)
 
-### Compiles and hot-reloads for development
-```
-yarn run serve
-```
+[主页代码开源地址](https://github.com/YasinChan/blog)
 
-### Compiles and minifies for production
-```
-yarn run build
-```
+[后端代码开源地址](https://github.com/YasinChan/blog-be)
 
-### Lints and fixes files
-```
-yarn run lint
-```
+**技术栈：vue-cli 3.0 + axios + element-ui **
+

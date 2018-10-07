@@ -3,11 +3,9 @@
     <el-row>
       <el-col :span="12" class="left-area">
         <el-tooltip class="item" effect="dark" content="设置" placement="top-start">
-          <el-button style="float: left;" @click="dialogFormVisible = true" icon="el-icon-setting" circle></el-button>
+          <el-button style="float: left;" @click="openSetting" icon="el-icon-setting" circle></el-button>
         </el-tooltip>
-        <el-tooltip class="item" effect="dark" content="插入图片" placement="top-start">
-          <el-button style="float: left;" @click="dialogPicVisible = true" icon="el-icon-upload" circle></el-button>
-        </el-tooltip>
+        <Upload @childExcute="getPicIdFromChild"></Upload>
         <div class="grid-content bg-purple area">
           <input class="nb-title nb-input" placeholder="标题" type="text" v-model="nb_title">
           <textarea placeholder="博客正文" class="nb-textarea" v-model="mdblog"></textarea>
@@ -15,7 +13,7 @@
       </el-col>
       <el-col :span="12" class="right-area">
         <el-tooltip class="item" effect="dark" content="保存" placement="top-end">
-          <el-button style="float: right;" icon="el-icon-circle-check" circle></el-button>
+          <el-button @click="saveBlog" style="float: right;" icon="el-icon-circle-check" circle></el-button>
         </el-tooltip>
         <div class="grid-content bg-purple area">
           <div class="nb-title">{{nb_title}}</div>
@@ -47,7 +45,7 @@
       <div class="dialog-li">
         <span class="dialog-li-title">标签</span>
         <el-select
-            v-model="selectedTag"
+            v-model="_selectedTagName"
             multiple
             filterable
             allow-create
@@ -55,9 +53,9 @@
             placeholder="请选择文章标签">
           <el-option
               v-for="item in existTag"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
+              :key="item.id"
+              :label="item.name"
+              :value="item.name">
           </el-option>
         </el-select>
       </div>
@@ -68,42 +66,32 @@
       </div>
     </el-dialog>
 
-    <el-dialog title="插入图片" width="30%" :visible.sync="dialogPicVisible">
-      <el-upload
-          style="text-align: center;"
-          class="upload-demo"
-          action="https://jsonplaceholder.typicode.com/posts/"
-          :on-success="successCallback"
-          :on-error="errorCallback"
-          :multiple=false
-          :show-file-list=false
-          drag>
-        <i class="el-icon-upload"></i>
-        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-      </el-upload>
-      <el-input @keyup.enter.native="setOnlinePic" style="margin-top: 20px;" placeholder="或者输入网络图片链接并回车" v-model="onlinePic"></el-input>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogPicVisible = false">取 消</el-button>
-      </div>
-    </el-dialog>
 
   </div>
 </template>
 <script>
+import {
+  getPostById,
+  updatePost,
+  getTags,
+  updatetagbypostid,
+  createPost
+} from "@/common/js/api";
 import marked from "marked";
 import "highlight.js/styles/monokai-sublime.css";
 import highlight from "highlight.js";
+import Upload from "@/components/upload.vue";
 
 marked.setOptions({
   renderer: new marked.Renderer(),
+  pedantic: false,
   gfm: true,
   tables: true,
-  headerPrefix: "ddd",
   breaks: false,
-  pedantic: false,
-  sanitize: true,
+  sanitize: false,
   smartLists: true,
-  smartypants: true,
+  smartypants: false,
+  xhtml: false,
   highlight: function(code) {
     return highlight.highlightAuto(code).value;
   }
@@ -111,6 +99,7 @@ marked.setOptions({
 export default {
   data() {
     return {
+      preview: "",
       mdblog: "",
       nb_title: "",
       formLabelWidth: "120px",
@@ -145,26 +134,118 @@ export default {
       },
       selectedTag: [], // 已选择的标签
       existTag: [], // 已存在的标签
-      // selectedCategory: "", // 已选择的分类 （分类只能选一个）
-      // existCategory: [], // 已存在的分类
 
       dialogPicVisible: false,
-      onlinePic: null
+      picture_id: null
     };
   },
-  mounted() {
-    // debugger;
-    // if (this.$route.name === "editblog") {
-    //   let id = this.$route.params.id;
-    // }
+  components: {
+    Upload
   },
-  components: {},
+  mounted() {
+    if (this.$route.name === "editblog") {
+      let id = this.$route.params.id;
+      getPostById(id).then(res => {
+        console.log(res);
+        let data = res.data.result;
+        this.mdblog = data.markdown;
+        this.nb_title = data.title;
+        this.preview = data.preview;
+        this.editDate = data.created_at;
+        this.changeDate = data.updated_at;
+        this.selectedTag = data.tags;
+        this.picture_id = data.picture_id;
+      });
+    }
+  },
   computed: {
     _htblog() {
       return marked(this.mdblog);
+    },
+    _selectedTagId() {
+      return this.selectedTag.map(v => v.id);
+    },
+    _selectedTagName: {
+      get() {
+        return this.selectedTag.map(v => v.name);
+      },
+      set(i) {
+        let arr = [];
+        this.existTag.forEach(v => {
+          i.forEach(vv => {
+            if (v.name === vv) {
+              arr.push(v);
+            }
+          });
+        });
+        this.selectedTag = arr;
+      }
     }
   },
   methods: {
+    getPicIdFromChild(id) {
+      this.picture_id = id;
+    },
+    openSetting() {
+      getTags().then(res => {
+        this.existTag = res.data.result;
+      });
+      this.dialogFormVisible = true;
+    },
+    saveBlog() {
+      if (this.$route.name === "editblog") {
+        let param = {
+          id: this.$route.params.id,
+          title: this.nb_title,
+          preview: this.preview,
+          markdown: this.mdblog,
+          rendered: marked(this.mdblog),
+          picture_id: this.picture_id,
+          created_at: this.editDate,
+          updated_at: this.changeDate
+        };
+        updatePost(param).then(res => {
+          console.log(res);
+          this.$message({
+            message: "保存成功！",
+            type: "success"
+          });
+        });
+        updatetagbypostid({
+          post_id: this.$route.params.id,
+          tag_id: this._selectedTagId
+        }).then(res => {
+          this.$message({
+            message: "保存成功！",
+            type: "success"
+          });
+          console.log(res);
+        });
+      } else {
+        let param = {
+          title: this.nb_title,
+          preview: this.preview,
+          markdown: this.mdblog,
+          rendered: marked(this.mdblog),
+          picture_id: this.picture_id,
+          created_at: this.editDate,
+          updated_at: this.changeDate
+        };
+        createPost(param).then(res => {
+          let post_id = res.data.result.data.post_id;
+          updatetagbypostid({
+            post_id: post_id,
+            tag_id: this._selectedTagId
+          }).then(res => {
+            this.$message({
+              message: "修改成功！",
+              type: "success"
+            });
+            console.log(res);
+          });
+        });
+      }
+    },
     successCallback() {},
     errorCallback() {},
     setOnlinePic() {
