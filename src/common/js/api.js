@@ -50,6 +50,8 @@ export const updatetagbypostid = param =>
  */
 export const getUptoken = () => axiosInstance.get("/api/uptoken");
 
+export const getUploads = () => axiosInstance.get("/api/getUploads");
+
 /**
  * 保存图片地址
  * @param param
