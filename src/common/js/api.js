@@ -69,3 +69,9 @@ export const getTags = () => axiosInstance.get("/api/tag");
 export const updateTag = param => axiosInstance.post("/api/updatetag", param);
 
 export const createTag = param => axiosInstance.post("/api/createtag", param);
+
+export const getNotes = () => axiosInstance.get("/api/note");
+
+export const createNote = param => axiosInstance.post("/api/note", param);
+
+export const deleteNote = id => axiosInstance.delete(`/api/note/${id}`);

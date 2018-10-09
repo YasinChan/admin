@@ -1,5 +1,12 @@
 <template>
   <div class="tags">
+    <el-alert
+        style="margin-bottom: 20px;"
+        title="标签不可轻易删除！"
+        type="warning"
+        center
+        :closable="false">
+    </el-alert>
     <el-button @click="addTag" type="success">添加标签</el-button>
     <el-table
         :data="tableData"

@@ -17,7 +17,7 @@
         </el-tooltip>
         <div class="grid-content bg-purple area">
           <div class="nb-title">{{nb_title}}</div>
-          <div class="right-blog-area" v-html="_htblog"></div>
+          <div class="markdown-body right-blog-area" v-html="_htblog"></div>
         </div>
       </el-col>
     </el-row>

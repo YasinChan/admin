@@ -16,14 +16,14 @@
           width="180">
         <template slot-scope="scope">
           <i class="el-icon-time"></i>
-          <span style="margin-left: 10px">{{ scope.row.created_at }}</span>
+          <span style="margin-left: 10px">{{ scope.row.updated_at }}</span>
         </template>
       </el-table-column>
       <el-table-column
           label="标题"
-          width="180">
+          width="680">
         <template slot-scope="scope">
-          <span size="medium">{{ scope.row.title }}</span>
+          <span size="medium">{{ scope.row.content }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作">
@@ -58,6 +58,11 @@
 </template>
 
 <script>
+import { getNotes, createNote, deleteNote } from "@/common/js/api.js";
+
+import tinydate from "tinydate";
+
+const stamp = tinydate("{YYYY}-{MM}.{DD}");
 export default {
   data() {
     return {
@@ -114,16 +119,36 @@ export default {
       ]
     };
   },
-  mounted() {},
+  mounted() {
+    getNotes().then(res => {
+      let result = res.data.result;
+      result.forEach(v => {
+        v.updated_at = stamp(new Date(v.updated_at));
+      });
+      this.tableData = result;
+    });
+  },
   methods: {
     saveNote() {
-      console.log(`date: ${this.date}, noteContent: ${this.noteContent}`);
+      createNote({ content: this.noteContent }).then(res => {
+        console.log(res);
+        this.$message({
+          message: "新建标签成功",
+          type: "success"
+        });
+        this.dialogTableVisible = false;
+      });
     },
     newNote() {
       this.dialogTableVisible = true;
     },
     handleDelete(index, row) {
-      console.log(index, row);
+      deleteNote(row.id).then(res => {
+        this.$message({
+          message: res.data.result,
+          type: "success"
+        });
+      });
     }
   }
 };
