@@ -12,7 +12,7 @@
     "element-ui": "^2.4.7",
     "highlight.js": "^9.12.0",
     "jsonwebtoken": "^8.3.0",
-    "marked": "^0.5.0",
+    "marked": "^4.0.10",
     "nanoid": "^1.2.6",
     "tinydate": "^1.0.0",
     "vue": "^2.5.17",
